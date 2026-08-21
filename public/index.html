@@ -21,7 +21,6 @@
       flex-direction: column;
     }
 
-    /* Cabeçalho */
     header {
       background: #1a1a1a;
       padding: 14px 20px;
@@ -45,7 +44,6 @@
       color: #22c55e;
     }
 
-    /* Área das mensagens */
     #mensagens {
       flex: 1;
       overflow-y: auto;
@@ -95,7 +93,6 @@
       text-align: right;
     }
 
-    /* Barra de digitação */
     .barra {
       background: #1a1a1a;
       border-top: 1px solid #2a2a2a;
@@ -144,7 +141,6 @@
       cursor: not-allowed;
     }
 
-    /* Tela de entrar com nome */
     #tela-nome {
       position: fixed;
       inset: 0;
@@ -195,7 +191,6 @@
 </head>
 <body>
 
-  <!-- Tela para digitar o nome -->
   <div id="tela-nome">
     <div class="caixa-nome">
       <h2>Entrar no Chat</h2>
@@ -229,6 +224,35 @@
     const btnEnviar = document.getElementById("btn-enviar");
     const statusEl = document.getElementById("status");
 
+    // ===== NOTIFICAÇÕES =====
+    function pedirPermissaoNotificacao() {
+      if (!("Notification" in window)) return;
+
+      if (Notification.permission === "default") {
+        Notification.requestPermission();
+      }
+    }
+
+    function mostrarNotificacao(nome, texto) {
+      if (!("Notification" in window)) return;
+      if (Notification.permission !== "granted") return;
+
+      // Só notifica se a aba NÃO estiver em foco
+      if (document.hidden) {
+        const notificacao = new Notification(nome + " disse:", {
+          body: texto,
+          icon: "https://cdn-icons-png.flaticon.com/512/134/134914.png",
+          tag: "chat-mensagem",
+          renotify: true
+        });
+
+        notificacao.onclick = () => {
+          window.focus();
+          notificacao.close();
+        };
+      }
+    }
+
     // Entrar com o nome
     function entrar() {
       const nome = nomeInput.value.trim();
@@ -239,6 +263,9 @@
       inputEl.disabled = false;
       btnEnviar.disabled = false;
       inputEl.focus();
+
+      // Pede permissão de notificação assim que a pessoa entra
+      pedirPermissaoNotificacao();
     }
 
     btnEntrar.addEventListener("click", entrar);
@@ -282,6 +309,11 @@
 
       mensagensEl.appendChild(div);
       mensagensEl.scrollTop = mensagensEl.scrollHeight;
+
+      // Mostra notificação se for de outra pessoa
+      if (data.nome !== meuNome) {
+        mostrarNotificacao(data.nome, data.texto);
+      }
     });
 
     // Status de conexão
@@ -295,7 +327,6 @@
       statusEl.classList.remove("online");
     });
 
-    // Proteção básica contra XSS
     function escapeHtml(texto) {
       const div = document.createElement("div");
       div.textContent = texto;
