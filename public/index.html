@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Chat em Tempo Real</title>
+  <title>Chat</title>
   <script src="/socket.io/socket.io.js"></script>
   <style>
     * {
@@ -187,6 +187,19 @@
     #nome-input:focus {
       border-color: #3b82f6;
     }
+
+    #btn-trocar-nome {
+      background: transparent;
+      border: none;
+      color: #888;
+      font-size: 0.8rem;
+      cursor: pointer;
+      padding: 4px 8px;
+    }
+
+    #btn-trocar-nome:hover {
+      color: #fff;
+    }
   </style>
 </head>
 <body>
@@ -201,8 +214,11 @@
   </div>
 
   <header>
-    <h1>Chat em Tempo Real</h1>
-    <div id="status">Conectando...</div>
+    <h1>Chat</h1>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <button id="btn-trocar-nome" title="Trocar de nome">Trocar nome</button>
+      <div id="status">Conectando...</div>
+    </div>
   </header>
 
   <div id="mensagens"></div>
@@ -223,11 +239,11 @@
     const inputEl = document.getElementById("input");
     const btnEnviar = document.getElementById("btn-enviar");
     const statusEl = document.getElementById("status");
+    const btnTrocarNome = document.getElementById("btn-trocar-nome");
 
     // ===== NOTIFICAÇÕES =====
     function pedirPermissaoNotificacao() {
       if (!("Notification" in window)) return;
-
       if (Notification.permission === "default") {
         Notification.requestPermission();
       }
@@ -237,7 +253,6 @@
       if (!("Notification" in window)) return;
       if (Notification.permission !== "granted") return;
 
-      // Só notifica se a aba NÃO estiver em foco
       if (document.hidden) {
         const notificacao = new Notification(nome + " disse:", {
           body: texto,
@@ -253,24 +268,43 @@
       }
     }
 
-    // Entrar com o nome
-    function entrar() {
-      const nome = nomeInput.value.trim();
+    // ===== ENTRAR / LOCALSTORAGE =====
+    function entrar(nomeSalvo = null) {
+      const nome = nomeSalvo || nomeInput.value.trim();
       if (!nome) return;
 
       meuNome = nome;
+      localStorage.setItem("chat_nome", meuNome); // salva o nome
+
       telaNome.style.display = "none";
       inputEl.disabled = false;
       btnEnviar.disabled = false;
       inputEl.focus();
 
-      // Pede permissão de notificação assim que a pessoa entra
       pedirPermissaoNotificacao();
     }
 
-    btnEntrar.addEventListener("click", entrar);
+    // Verifica se já tem nome salvo
+    const nomeSalvo = localStorage.getItem("chat_nome");
+    if (nomeSalvo) {
+      // Já tem nome → entra direto
+      entrar(nomeSalvo);
+    }
+
+    btnEntrar.addEventListener("click", () => entrar());
     nomeInput.addEventListener("keydown", (e) => {
       if (e.key === "Enter") entrar();
+    });
+
+    // Botão para trocar de nome
+    btnTrocarNome.addEventListener("click", () => {
+      localStorage.removeItem("chat_nome");
+      meuNome = "";
+      telaNome.style.display = "flex";
+      inputEl.disabled = true;
+      btnEnviar.disabled = true;
+      nomeInput.value = "";
+      nomeInput.focus();
     });
 
     // Enviar mensagem
@@ -310,7 +344,6 @@
       mensagensEl.appendChild(div);
       mensagensEl.scrollTop = mensagensEl.scrollHeight;
 
-      // Mostra notificação se for de outra pessoa
       if (data.nome !== meuNome) {
         mostrarNotificacao(data.nome, data.texto);
       }
