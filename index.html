@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mensagem Popup</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: #111;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    /* O "popup" */
+    .popup {
+      background: #1e1e1e;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+      width: 100%;
+      max-width: 560px;
+      overflow: hidden;
+      border: 1px solid #333;
+    }
+
+    /* Cabeçalho do popup */
+    .popup-header {
+      background: #2a2a2a;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #333;
+      cursor: default;
+      user-select: none;
+    }
+
+    .popup-title {
+      font-size: 0.9rem;
+      color: #aaa;
+      font-weight: 500;
+    }
+
+    .popup-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      border: none;
+      background: transparent;
+      color: #888;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+
+    .btn-icon:hover {
+      background: #3a3a3a;
+      color: #fff;
+    }
+
+    /* Área da mensagem */
+    .mensagem-area {
+      padding: 40px 30px;
+      min-height: 160px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    #mensagem {
+      font-size: clamp(1.6rem, 4.5vw, 2.4rem);
+      font-weight: 700;
+      line-height: 1.3;
+      word-break: break-word;
+      color: #fff;
+    }
+
+    /* Barra de digitação */
+    .barra {
+      padding: 16px;
+      background: #181818;
+      border-top: 1px solid #2a2a2a;
+      display: flex;
+      gap: 10px;
+    }
+
+    #input {
+      flex: 1;
+      background: #2d2d2d;
+      border: 1px solid #3a3a3a;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 1rem;
+      color: white;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    #input:focus {
+      border-color: #3b82f6;
+      background: #333;
+    }
+
+    #input::placeholder {
+      color: #777;
+    }
+
+    .btn-enviar {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 20px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      white-space: nowrap;
+    }
+
+    .btn-enviar:hover {
+      background: #2563eb;
+    }
+
+    .btn-enviar:active {
+      transform: scale(0.97);
+    }
+
+    /* Botão para abrir em janela popup real */
+    .btn-abrir-popup {
+      background: #374151;
+      color: #ddd;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn-abrir-popup:hover {
+      background: #4b5563;
+    }
+
+    /* Quando aberto como janela popup pequena */
+    body.modo-popup {
+      background: #1e1e1e;
+      padding: 0;
+    }
+
+    body.modo-popup .popup {
+      max-width: none;
+      width: 100%;
+      height: 100vh;
+      border-radius: 0;
+      border: none;
+      box-shadow: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="popup">
+    <div class="popup-header">
+      <div class="popup-title">Mensagem Popup</div>
+      <div class="popup-actions">
+        <button class="btn-icon" id="btn-limpar" title="Limpar mensagem">✕</button>
+      </div>
+    </div>
+
+    <div class="mensagem-area">
+      <div id="mensagem">Digite a mensagem e aperte Enter</div>
+    </div>
+
+    <div class="barra">
+      <input 
+        type="text" 
+        id="input" 
+        placeholder="Digite sua mensagem..." 
+        autofocus
+        autocomplete="off"
+      />
+      <button class="btn-enviar" id="btn-enviar">Enviar</button>
+      <button class="btn-abrir-popup" id="btn-popup">Abrir Popup</button>
+    </div>
+  </div>
+
+  <script>
+    const mensagemEl = document.getElementById("mensagem");
+    const inputEl = document.getElementById("input");
+    const btnEnviar = document.getElementById("btn-enviar");
+    const btnLimpar = document.getElementById("btn-limpar");
+    const btnPopup = document.getElementById("btn-popup");
+
+    // Detecta se já está rodando em janela popup
+    if (window.opener || window.name === "mensagemPopup") {
+      document.body.classList.add("modo-popup");
+      btnPopup.style.display = "none";
+    }
+
+    function atualizarMensagem() {
+      const texto = inputEl.value.trim();
+      if (texto) {
+        mensagemEl.textContent = texto;
+        inputEl.value = "";
+        inputEl.focus();
+      }
+    }
+
+    function limparMensagem() {
+      mensagemEl.textContent = "Digite a mensagem e aperte Enter";
+      inputEl.focus();
+    }
+
+    // Enter ou botão Enviar
+    inputEl.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") atualizarMensagem();
+    });
+    btnEnviar.addEventListener("click", atualizarMensagem);
+    btnLimpar.addEventListener("click", limparMensagem);
+
+    // Abrir em janela popup pequena
+    btnPopup.addEventListener("click", () => {
+      const largura = 580;
+      const altura = 280;
+      const left = (screen.width - largura) / 2;
+      const top = (screen.height - altura) / 2;
+
+      window.open(
+        window.location.href,
+        "mensagemPopup",
+        `width=${largura},height=${altura},left=${left},top=${top},resizable=yes,scrollbars=no,status=no,toolbar=no,menubar=no,location=no`
+      );
+    });
+  </script>
+</body>
+</html>
