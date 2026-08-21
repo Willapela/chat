@@ -1,26 +1,62 @@
-# Mensagem Popup (Versão Web)
+# Chat em Tempo Real (Socket.io)
 
-Versão web com visual de **popup**.
+Chat simples e funcional com **Socket.io**.  
+Várias pessoas abrem o mesmo link e conversam em tempo real.
 
-## Como usar
+## Como rodar localmente
 
-1. Digite a mensagem e aperte **Enter** (ou clique em Enviar)
-2. A mensagem aparece grande no centro do card
-3. Clique em **Abrir Popup** para abrir em uma janelinha separada do navegador
-4. Clique no **✕** para limpar a mensagem
+1. Instale as dependências:
+```bash
+npm install
+```
 
-## Como colocar no GitHub Pages
+2. Inicie o servidor:
+```bash
+npm start
+```
 
-1. Crie um repositório novo no GitHub
-2. Faça upload do arquivo `index.html`
-3. Vá em **Settings → Pages**
-4. Em Source, escolha a branch `main` e a pasta `/ (root)`
-5. Seu site ficará em:  
-   `https://SEU-USUARIO.github.io/NOME-DO-REPO`
+3. Abra no navegador:  
+[http://localhost:3000](http://localhost:3000)
 
-## Observação
+## Como colocar online (grátis)
 
-Essa versão roda no navegador.  
-Ela **não** fica por cima de outros programas do Windows (limitação dos navegadores).
+Como o Socket.io precisa de um servidor, use um destes serviços gratuitos:
 
-Se você precisar que a mensagem fique realmente sempre por cima de tudo, use a versão `.exe`.
+### Opção 1 – Render.com (mais fácil)
+
+1. Crie uma conta em [https://render.com](https://render.com)
+2. Clique em **New → Web Service**
+3. Conecte seu repositório do GitHub
+4. Configurações:
+   - **Build Command**: `npm install`
+   - **Start Command**: `npm start`
+5. Clique em **Create Web Service**
+6. Depois de alguns minutos o site ficará online
+
+### Opção 2 – Railway.app
+
+1. Entre em [https://railway.app](https://railway.app)
+2. New Project → Deploy from GitHub
+3. Selecione o repositório
+4. Railway detecta automaticamente e sobe
+
+### Opção 3 – Fly.io / Glitch
+
+Também funcionam bem.
+
+## Estrutura do projeto
+
+```
+chat-socket/
+├── package.json
+├── server.js          ← Backend (Socket.io)
+├── public/
+│   └── index.html     ← Frontend (chat)
+└── README.md
+```
+
+## Observações
+
+- O chat é **global** (todos que abrirem o link entram na mesma conversa)
+- Não tem histórico salvo (quando o servidor reinicia, as mensagens somem)
+- Funciona em celular e computador
