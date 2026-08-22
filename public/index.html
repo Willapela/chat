@@ -139,6 +139,7 @@
       flex-direction: column;
       min-width: 0;
       height: 100%;
+      position: relative;
     }
 
     header {
@@ -222,11 +223,14 @@
     .barra {
       background: #1a1a1a;
       border-top: 1px solid #2a2a2a;
-      padding: 12px 12px;
-      padding-bottom: max(12px, env(safe-area-inset-bottom));
+      padding: 10px 12px;
+      padding-bottom: max(10px, env(safe-area-inset-bottom));
       display: flex;
       gap: 8px;
       flex-shrink: 0;
+      /* importante para o teclado */
+      position: relative;
+      z-index: 10;
     }
 
     #input {
@@ -235,7 +239,7 @@
       border: 1px solid #3a3a3a;
       border-radius: 22px;
       padding: 12px 16px;
-      font-size: 16px; /* evita zoom no iOS */
+      font-size: 16px;
       color: white;
       outline: none;
       min-width: 0;
@@ -362,7 +366,6 @@
       header { padding: 10px 12px; }
     }
 
-    /* Telas bem pequenas */
     @media (max-width: 380px) {
       .msg { max-width: 92%; font-size: 0.9rem; }
       #btn-enviar { width: 42px; height: 42px; }
@@ -382,7 +385,6 @@
 
   <div class="overlay" id="overlay"></div>
 
-  <!-- SIDEBAR -->
   <aside id="sidebar">
     <div class="sidebar-header">
       <h2>Chat</h2>
@@ -400,7 +402,6 @@
     <div id="lista-online"></div>
   </aside>
 
-  <!-- MAIN -->
   <div id="main">
     <header>
       <div style="display:flex; align-items:center; gap:10px; min-width:0; flex:1;">
@@ -415,7 +416,7 @@
 
     <div id="mensagens"></div>
 
-    <div class="barra">
+    <div class="barra" id="barra">
       <input type="text" id="input" placeholder="Mensagem..." disabled autocomplete="off" />
       <button id="btn-enviar" disabled aria-label="Enviar">➤</button>
     </div>
@@ -442,7 +443,46 @@
     const btnMenuMobile = document.getElementById("btn-menu-mobile");
     const sidebar = document.getElementById("sidebar");
     const overlay = document.getElementById("overlay");
+    const mainEl = document.getElementById("main");
+    const barraEl = document.getElementById("barra");
 
+    // ===== AJUSTE DO TECLADO (mobile) =====
+    function ajustarTeclado() {
+      if (!window.visualViewport) return;
+
+      const vv = window.visualViewport;
+      const offset = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+
+      // Empurra a barra para cima quando o teclado abre
+      barraEl.style.transform = offset > 0 ? `translateY(-${offset}px)` : "";
+      // Reduz a área de mensagens para não ficar atrás do teclado
+      mensagensEl.style.paddingBottom = offset > 0 ? (offset + 8) + "px" : "";
+    }
+
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", ajustarTeclado);
+      window.visualViewport.addEventListener("scroll", ajustarTeclado);
+    }
+
+    // Quando foca no input, garante que a barra fique visível
+    inputEl.addEventListener("focus", () => {
+      setTimeout(() => {
+        ajustarTeclado();
+        mensagensEl.scrollTop = mensagensEl.scrollHeight;
+        // fallback extra
+        inputEl.scrollIntoView({ block: "end", behavior: "smooth" });
+      }, 150);
+      setTimeout(ajustarTeclado, 350);
+    });
+
+    inputEl.addEventListener("blur", () => {
+      setTimeout(() => {
+        barraEl.style.transform = "";
+        mensagensEl.style.paddingBottom = "";
+      }, 100);
+    });
+
+    // ===== NOTIFICAÇÕES =====
     function pedirPermissaoNotificacao() {
       if (!("Notification" in window)) return;
       if (Notification.permission === "default") Notification.requestPermission();
@@ -583,7 +623,6 @@
       return d.innerHTML;
     }
 
-    // Menu mobile
     btnMenuMobile.addEventListener("click", () => {
       sidebar.classList.toggle("aberta");
       overlay.classList.toggle("ativo");
