@@ -12,6 +12,8 @@
       height: 100%;
       height: 100dvh;
       overflow: hidden;
+      position: fixed;
+      width: 100%;
     }
 
     body {
@@ -140,6 +142,7 @@
       min-width: 0;
       height: 100%;
       position: relative;
+      overflow: hidden;
     }
 
     header {
@@ -177,6 +180,7 @@
       display: flex;
       flex-direction: column;
       gap: 10px;
+      min-height: 0;
     }
 
     .msg {
@@ -228,9 +232,6 @@
       display: flex;
       gap: 8px;
       flex-shrink: 0;
-      /* importante para o teclado */
-      position: relative;
-      z-index: 10;
     }
 
     #input {
@@ -444,41 +445,38 @@
     const sidebar = document.getElementById("sidebar");
     const overlay = document.getElementById("overlay");
     const mainEl = document.getElementById("main");
-    const barraEl = document.getElementById("barra");
 
-    // ===== AJUSTE DO TECLADO (mobile) =====
-    function ajustarTeclado() {
+    // ===== TECLADO MOBILE (corrige posição) =====
+    function ajustarViewport() {
       if (!window.visualViewport) return;
 
       const vv = window.visualViewport;
-      const offset = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+      // Ajusta a altura do main para a área visível real
+      mainEl.style.height = vv.height + "px";
+      // Compensa o scroll do visual viewport (Android)
+      mainEl.style.transform = "translateY(" + vv.offsetTop + "px)";
 
-      // Empurra a barra para cima quando o teclado abre
-      barraEl.style.transform = offset > 0 ? `translateY(-${offset}px)` : "";
-      // Reduz a área de mensagens para não ficar atrás do teclado
-      mensagensEl.style.paddingBottom = offset > 0 ? (offset + 8) + "px" : "";
+      // Mantém as mensagens no final
+      mensagensEl.scrollTop = mensagensEl.scrollHeight;
     }
 
     if (window.visualViewport) {
-      window.visualViewport.addEventListener("resize", ajustarTeclado);
-      window.visualViewport.addEventListener("scroll", ajustarTeclado);
+      window.visualViewport.addEventListener("resize", ajustarViewport);
+      window.visualViewport.addEventListener("scroll", ajustarViewport);
     }
 
-    // Quando foca no input, garante que a barra fique visível
+    // Também escuta resize normal
+    window.addEventListener("resize", ajustarViewport);
+
     inputEl.addEventListener("focus", () => {
-      setTimeout(() => {
-        ajustarTeclado();
-        mensagensEl.scrollTop = mensagensEl.scrollHeight;
-        // fallback extra
-        inputEl.scrollIntoView({ block: "end", behavior: "smooth" });
-      }, 150);
-      setTimeout(ajustarTeclado, 350);
+      setTimeout(ajustarViewport, 50);
+      setTimeout(ajustarViewport, 300);
     });
 
     inputEl.addEventListener("blur", () => {
       setTimeout(() => {
-        barraEl.style.transform = "";
-        mensagensEl.style.paddingBottom = "";
+        mainEl.style.height = "";
+        mainEl.style.transform = "";
       }, 100);
     });
 
@@ -631,6 +629,9 @@
       sidebar.classList.remove("aberta");
       overlay.classList.remove("ativo");
     });
+
+    // Ajuste inicial
+    ajustarViewport();
   </script>
 </body>
 </html>
