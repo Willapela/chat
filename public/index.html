@@ -406,20 +406,51 @@
       setTimeout(() => { mainEl.style.height = ""; mainEl.style.transform = ""; }, 100);
     });
 
+    // Som simples de notificação
+    function tocarSom() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.connect(g);
+        g.connect(ctx.destination);
+        o.frequency.value = 880;
+        g.gain.value = 0.08;
+        o.start();
+        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+        o.stop(ctx.currentTime + 0.3);
+      } catch (e) {}
+    }
+
     function pedirPermissaoNotificacao() {
-      if ("Notification" in window && Notification.permission === "default") {
+      if (!("Notification" in window)) return;
+      if (Notification.permission === "default") {
         Notification.requestPermission();
       }
     }
 
-    function mostrarNotificacao(nome, texto) {
-      if (!("Notification" in window) || Notification.permission !== "granted" || !document.hidden) return;
-      const n = new Notification(nome + " disse:", {
-        body: texto,
-        icon: "https://cdn-icons-png.flaticon.com/512/134/134914.png",
-        tag: "chat-mensagem", renotify: true
-      });
-      n.onclick = () => { window.focus(); n.close(); };
+    function mostrarNotificacao(nome, texto, forcar) {
+      // Som sempre que a aba não está em foco
+      if (document.hidden || document.visibilityState === "hidden" || forcar) {
+        tocarSom();
+      }
+
+      if (!("Notification" in window)) return;
+      if (Notification.permission !== "granted") return;
+
+      // Notifica se a aba estiver em segundo plano OU se for de outra sala
+      if (document.hidden || document.visibilityState === "hidden" || forcar) {
+        try {
+          const n = new Notification(nome + " disse:", {
+            body: texto,
+            icon: "https://cdn-icons-png.flaticon.com/512/134/134914.png",
+            tag: "chat-mensagem",
+            renotify: true,
+            requireInteraction: false
+          });
+          n.onclick = () => { window.focus(); n.close(); };
+        } catch (e) {}
+      }
     }
 
     function criarIdSalaPrivada(id1, id2) {
@@ -569,7 +600,18 @@
     inputEl.addEventListener("keydown", (e) => { if (e.key === "Enter") enviar(); });
 
     socket.on("mensagem", (data) => {
-      if (data.sala !== salaAtual) return;
+      const deOutro = data.nome !== meuNome;
+      const outraSala = data.sala !== salaAtual;
+
+      // Notificação: de outra pessoa
+      if (deOutro) {
+        // Se for de outra sala, força notificação; se for da sala atual, só se aba estiver escondida
+        mostrarNotificacao(data.nome, data.texto, outraSala);
+      }
+
+      // Só mostra na tela se for da sala atual
+      if (outraSala) return;
+
       const div = document.createElement("div");
       div.className = "msg " + (data.nome === meuNome ? "eu" : "outro");
       div.innerHTML = `
@@ -579,7 +621,6 @@
       `;
       mensagensEl.appendChild(div);
       mensagensEl.scrollTop = mensagensEl.scrollHeight;
-      if (data.nome !== meuNome) mostrarNotificacao(data.nome, data.texto);
     });
 
     socket.on("connect", () => {
