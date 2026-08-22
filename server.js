@@ -12,6 +12,9 @@ app.use(express.static(path.join(__dirname, "public")));
 // socket.id → { id, nome }
 const usuarios = new Map();
 
+// sala → pin (string ou null)
+const salasPin = new Map();
+
 function emitirOnline() {
   const lista = Array.from(usuarios.values());
   io.emit("usuarios-online", lista);
@@ -20,39 +23,66 @@ function emitirOnline() {
 io.on("connection", (socket) => {
   console.log("Conectado:", socket.id);
 
-  // Usuário entra com nome
   socket.on("entrar", (nome) => {
     const nomeLimpo = (nome || "Anônimo").trim().slice(0, 20);
     usuarios.set(socket.id, { id: socket.id, nome: nomeLimpo });
     socket.nome = nomeLimpo;
     socket.join("geral");
     socket.salaAtual = "geral";
-
     emitirOnline();
-    console.log(`${nomeLimpo} entrou`);
   });
 
-  // Trocar de sala
-  socket.on("entrar-sala", (sala) => {
+  // Criar / definir PIN de uma sala privada
+  socket.on("definir-pin", ({ sala, pin }) => {
+    if (!sala || sala === "geral") return;
+    if (pin && String(pin).trim()) {
+      salasPin.set(sala, String(pin).trim().slice(0, 12));
+    } else {
+      salasPin.delete(sala);
+    }
+  });
+
+  // Verificar PIN antes de entrar na sala
+  socket.on("entrar-sala", ({ sala, pin }, callback) => {
+    if (!sala) return;
+
+    const pinCorreto = salasPin.get(sala);
+
+    // Se a sala tem PIN e o usuário não enviou o certo
+    if (pinCorreto && pinCorreto !== String(pin || "").trim()) {
+      if (typeof callback === "function") {
+        callback({ ok: false, precisaPin: true });
+      }
+      return;
+    }
+
+    // Sai da sala anterior
     if (socket.salaAtual) {
       socket.leave(socket.salaAtual);
     }
     socket.join(sala);
     socket.salaAtual = sala;
+
+    if (typeof callback === "function") {
+      callback({ ok: true });
+    }
   });
 
-  // Enviar mensagem (só para a sala atual)
+  // Checar se a sala precisa de PIN (sem entrar ainda)
+  socket.on("checar-pin", (sala, callback) => {
+    const temPin = salasPin.has(sala);
+    if (typeof callback === "function") {
+      callback({ precisaPin: temPin });
+    }
+  });
+
   socket.on("mensagem", (data) => {
-    // data = { sala, nome, texto, hora }
     if (!data.sala || !data.texto) return;
     io.to(data.sala).emit("mensagem", data);
   });
 
-  // Desconectou
   socket.on("disconnect", () => {
-    const user = usuarios.get(socket.id);
-    if (user) {
-      console.log(`${user.nome} saiu`);
+    if (usuarios.has(socket.id)) {
       usuarios.delete(socket.id);
       emitirOnline();
     }

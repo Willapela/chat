@@ -24,7 +24,6 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* ===== SIDEBAR ===== */
     #sidebar {
       width: 280px;
       background: #161616;
@@ -38,16 +37,12 @@
     .sidebar-header {
       padding: 16px;
       border-bottom: 1px solid #2a2a2a;
+      min-height: 56px;
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      min-height: 56px;
     }
 
-    .sidebar-header h2 {
-      font-size: 1.15rem;
-      font-weight: 600;
-    }
+    .sidebar-header h2 { font-size: 1.15rem; font-weight: 600; }
 
     .sala-item {
       padding: 14px 16px;
@@ -55,321 +50,212 @@
       display: flex;
       align-items: center;
       gap: 12px;
-      transition: background 0.15s;
       border-left: 3px solid transparent;
       min-height: 56px;
     }
-
-    .sala-item:hover, .sala-item:active { background: #222; }
-    .sala-item.ativa {
-      background: #1e2a3a;
-      border-left-color: #3b82f6;
-    }
+    .sala-item:active { background: #222; }
+    .sala-item.ativa { background: #1e2a3a; border-left-color: #3b82f6; }
 
     .sala-item .icone {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: #2a2a2a;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1rem;
-      flex-shrink: 0;
+      width: 36px; height: 36px; border-radius: 50%;
+      background: #2a2a2a; display: flex; align-items: center;
+      justify-content: center; font-size: 1rem; flex-shrink: 0;
     }
-
     .sala-item.geral .icone { background: #3b82f6; }
 
     .online-dot {
-      width: 9px;
-      height: 9px;
-      background: #22c55e;
-      border-radius: 50%;
-      position: absolute;
-      bottom: 0;
-      right: 0;
+      width: 9px; height: 9px; background: #22c55e;
+      border-radius: 50%; position: absolute; bottom: 0; right: 0;
       border: 2px solid #161616;
     }
 
     #lista-online {
-      flex: 1;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
+      flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
       padding: 4px 0 20px;
     }
 
     .secao-titulo {
-      padding: 14px 16px 8px;
-      font-size: 0.75rem;
-      color: #666;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      padding: 14px 16px 8px; font-size: 0.75rem;
+      color: #666; text-transform: uppercase; letter-spacing: 0.5px;
     }
 
     .usuario-item {
-      padding: 12px 16px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      transition: background 0.15s;
-      min-height: 52px;
+      padding: 12px 16px; cursor: pointer;
+      display: flex; align-items: center; gap: 12px; min-height: 52px;
     }
-
-    .usuario-item:hover, .usuario-item:active { background: #222; }
+    .usuario-item:active { background: #222; }
     .usuario-item.eu { opacity: 0.55; cursor: default; }
-    .usuario-item.eu:hover, .usuario-item.eu:active { background: transparent; }
 
     .usuario-item .avatar {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: #333;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.9rem;
-      font-weight: 600;
-      position: relative;
-      flex-shrink: 0;
+      width: 36px; height: 36px; border-radius: 50%;
+      background: #333; display: flex; align-items: center;
+      justify-content: center; font-size: 0.9rem; font-weight: 600;
+      position: relative; flex-shrink: 0;
     }
 
-    /* ===== MAIN ===== */
     #main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      min-width: 0;
-      height: 100%;
-      position: relative;
-      overflow: hidden;
+      flex: 1; display: flex; flex-direction: column;
+      min-width: 0; height: 100%; overflow: hidden;
     }
 
     header {
-      background: #1a1a1a;
-      padding: 12px 16px;
+      background: #1a1a1a; padding: 12px 16px;
       border-bottom: 1px solid #2a2a2a;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      min-height: 56px;
-      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 10px; min-height: 56px; flex-shrink: 0;
     }
 
     header h1 {
-      font-size: 1.05rem;
-      font-weight: 600;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      font-size: 1.05rem; font-weight: 600;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
 
-    #status {
-      font-size: 0.78rem;
-      color: #888;
-      white-space: nowrap;
-    }
+    #status { font-size: 0.78rem; color: #888; }
     #status.online { color: #22c55e; }
 
     #mensagens {
-      flex: 1;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      min-height: 0;
+      flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+      padding: 16px; display: flex; flex-direction: column;
+      gap: 10px; min-height: 0;
     }
 
     .msg {
-      max-width: 85%;
-      padding: 10px 14px;
-      border-radius: 14px;
-      line-height: 1.4;
-      word-break: break-word;
+      max-width: 85%; padding: 10px 14px; border-radius: 14px;
+      line-height: 1.4; word-break: break-word; font-size: 0.95rem;
       animation: aparecer 0.2s ease;
-      font-size: 0.95rem;
     }
-
     @keyframes aparecer {
       from { opacity: 0; transform: translateY(6px); }
       to { opacity: 1; transform: translateY(0); }
     }
-
-    .msg.eu {
-      align-self: flex-end;
-      background: #3b82f6;
-      border-bottom-right-radius: 4px;
-    }
-
-    .msg.outro {
-      align-self: flex-start;
-      background: #2a2a2a;
-      border-bottom-left-radius: 4px;
-    }
-
-    .msg .nome {
-      font-size: 0.72rem;
-      font-weight: 600;
-      margin-bottom: 3px;
-      opacity: 0.85;
-    }
-
-    .msg .hora {
-      font-size: 0.68rem;
-      opacity: 0.55;
-      margin-top: 4px;
-      text-align: right;
-    }
+    .msg.eu { align-self: flex-end; background: #3b82f6; border-bottom-right-radius: 4px; }
+    .msg.outro { align-self: flex-start; background: #2a2a2a; border-bottom-left-radius: 4px; }
+    .msg .nome { font-size: 0.72rem; font-weight: 600; margin-bottom: 3px; opacity: 0.85; }
+    .msg .hora { font-size: 0.68rem; opacity: 0.55; margin-top: 4px; text-align: right; }
 
     .barra {
-      background: #1a1a1a;
-      border-top: 1px solid #2a2a2a;
-      padding: 10px 12px;
-      padding-bottom: max(10px, env(safe-area-inset-bottom));
-      display: flex;
-      gap: 8px;
-      flex-shrink: 0;
+      background: #1a1a1a; border-top: 1px solid #2a2a2a;
+      padding: 10px 12px; padding-bottom: max(10px, env(safe-area-inset-bottom));
+      display: flex; gap: 8px; flex-shrink: 0; align-items: center;
+      position: relative;
     }
 
     #input {
-      flex: 1;
-      background: #2d2d2d;
-      border: 1px solid #3a3a3a;
-      border-radius: 22px;
-      padding: 12px 16px;
-      font-size: 16px;
-      color: white;
-      outline: none;
-      min-width: 0;
+      flex: 1; background: #2d2d2d; border: 1px solid #3a3a3a;
+      border-radius: 22px; padding: 12px 16px; font-size: 16px;
+      color: white; outline: none; min-width: 0;
     }
     #input:focus { border-color: #3b82f6; }
     #input::placeholder { color: #777; }
 
-    #btn-enviar {
-      background: #3b82f6;
-      color: white;
-      border: none;
-      border-radius: 50%;
-      width: 44px;
-      height: 44px;
-      font-size: 1.1rem;
-      font-weight: 600;
-      cursor: pointer;
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0;
+    #btn-emoji, #btn-enviar {
+      background: #2d2d2d; color: white; border: none;
+      border-radius: 50%; width: 42px; height: 42px;
+      font-size: 1.2rem; cursor: pointer; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
     }
+    #btn-enviar { background: #3b82f6; font-size: 1.1rem; }
     #btn-enviar:disabled { background: #374151; }
 
-    #btn-menu-mobile {
+    /* Emoji picker */
+    #emoji-picker {
       display: none;
-      background: none;
-      border: none;
-      color: #fff;
-      font-size: 1.4rem;
-      cursor: pointer;
-      padding: 6px;
-      line-height: 1;
+      position: absolute;
+      bottom: 100%;
+      left: 0; right: 0;
+      background: #1e1e1e;
+      border-top: 1px solid #333;
+      padding: 12px;
+      max-height: 200px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      z-index: 20;
+    }
+    #emoji-picker.aberto { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; }
+    #emoji-picker span {
+      font-size: 1.5rem; text-align: center; padding: 6px;
+      cursor: pointer; border-radius: 8px;
+    }
+    #emoji-picker span:active { background: #333; }
+
+    #btn-menu-mobile {
+      display: none; background: none; border: none;
+      color: #fff; font-size: 1.4rem; cursor: pointer; padding: 6px;
     }
 
     #btn-trocar-nome {
-      background: transparent;
-      border: none;
-      color: #888;
-      font-size: 0.78rem;
-      cursor: pointer;
-      padding: 6px 8px;
+      background: transparent; border: none; color: #888;
+      font-size: 0.78rem; cursor: pointer; padding: 6px 8px;
     }
+
+    /* Modais PIN */
+    .modal {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.7); z-index: 250;
+      align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal.aberto { display: flex; }
+
+    .modal-box {
+      background: #1e1e1e; border-radius: 16px; padding: 24px;
+      width: 100%; max-width: 340px; border: 1px solid #333;
+      text-align: center;
+    }
+    .modal-box h3 { margin-bottom: 8px; font-size: 1.15rem; }
+    .modal-box p { color: #888; font-size: 0.9rem; margin-bottom: 16px; }
+    .modal-box input {
+      width: 100%; background: #2d2d2d; border: 1px solid #3a3a3a;
+      border-radius: 10px; padding: 12px; font-size: 16px;
+      color: white; outline: none; text-align: center;
+      letter-spacing: 4px; margin-bottom: 14px;
+    }
+    .modal-box input:focus { border-color: #3b82f6; }
+    .modal-botoes { display: flex; gap: 10px; }
+    .modal-botoes button {
+      flex: 1; padding: 12px; border: none; border-radius: 10px;
+      font-size: 0.95rem; font-weight: 600; cursor: pointer;
+    }
+    .btn-cancelar { background: #333; color: #ccc; }
+    .btn-confirmar { background: #3b82f6; color: white; }
 
     /* Tela de nome */
     #tela-nome {
-      position: fixed;
-      inset: 0;
-      background: #0f0f0f;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 300;
-      padding: 20px;
+      position: fixed; inset: 0; background: #0f0f0f;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 300; padding: 20px;
     }
-
     .caixa-nome {
-      background: #1e1e1e;
-      padding: 28px 24px;
-      border-radius: 18px;
-      width: 100%;
-      max-width: 360px;
-      text-align: center;
-      border: 1px solid #333;
+      background: #1e1e1e; padding: 28px 24px; border-radius: 18px;
+      width: 100%; max-width: 360px; text-align: center; border: 1px solid #333;
     }
-
     .caixa-nome h2 { margin-bottom: 8px; font-size: 1.25rem; }
     .caixa-nome p { color: #888; font-size: 0.9rem; margin-bottom: 20px; }
-
     #nome-input {
-      width: 100%;
-      background: #2d2d2d;
-      border: 1px solid #3a3a3a;
-      border-radius: 12px;
-      padding: 14px 16px;
-      font-size: 16px;
-      color: white;
-      outline: none;
-      margin-bottom: 14px;
+      width: 100%; background: #2d2d2d; border: 1px solid #3a3a3a;
+      border-radius: 12px; padding: 14px 16px; font-size: 16px;
+      color: white; outline: none; margin-bottom: 14px;
     }
     #nome-input:focus { border-color: #3b82f6; }
-
     #btn-entrar {
-      width: 100%;
-      background: #3b82f6;
-      color: white;
-      border: none;
-      border-radius: 12px;
-      padding: 14px;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
+      width: 100%; background: #3b82f6; color: white; border: none;
+      border-radius: 12px; padding: 14px; font-size: 1rem; font-weight: 600;
     }
 
     .overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.55);
-      z-index: 140;
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.55); z-index: 140;
     }
     .overlay.ativo { display: block; }
 
-    /* ========== MOBILE ========== */
     @media (max-width: 768px) {
       #sidebar {
-        position: fixed;
-        left: -300px;
-        top: 0;
-        bottom: 0;
-        z-index: 150;
-        width: 85%;
-        max-width: 300px;
-        transition: left 0.25s ease;
-        box-shadow: 4px 0 20px rgba(0,0,0,0.4);
+        position: fixed; left: -300px; top: 0; bottom: 0;
+        z-index: 150; width: 85%; max-width: 300px;
+        transition: left 0.25s ease; box-shadow: 4px 0 20px rgba(0,0,0,0.4);
       }
       #sidebar.aberta { left: 0; }
-
       #btn-menu-mobile { display: block; }
-
       .msg { max-width: 90%; }
-
-      header { padding: 10px 12px; }
-    }
-
-    @media (max-width: 380px) {
-      .msg { max-width: 92%; font-size: 0.9rem; }
-      #btn-enviar { width: 42px; height: 42px; }
     }
   </style>
 </head>
@@ -384,32 +270,54 @@
     </div>
   </div>
 
+  <!-- Modal definir PIN -->
+  <div class="modal" id="modal-definir-pin">
+    <div class="modal-box">
+      <h3>Proteger conversa</h3>
+      <p>Defina um PIN para que só quem souber possa entrar. Deixe em branco para sem PIN.</p>
+      <input type="text" id="input-definir-pin" placeholder="PIN (opcional)" maxlength="12" inputmode="numeric" />
+      <div class="modal-botoes">
+        <button class="btn-cancelar" id="btn-pin-cancelar">Cancelar</button>
+        <button class="btn-confirmar" id="btn-pin-ok">Continuar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal digitar PIN -->
+  <div class="modal" id="modal-digitar-pin">
+    <div class="modal-box">
+      <h3>Conversa protegida</h3>
+      <p>Digite o PIN para entrar</p>
+      <input type="text" id="input-digitar-pin" placeholder="PIN" maxlength="12" inputmode="numeric" />
+      <div class="modal-botoes">
+        <button class="btn-cancelar" id="btn-digitar-cancelar">Cancelar</button>
+        <button class="btn-confirmar" id="btn-digitar-ok">Entrar</button>
+      </div>
+    </div>
+  </div>
+
   <div class="overlay" id="overlay"></div>
 
   <aside id="sidebar">
-    <div class="sidebar-header">
-      <h2>Chat</h2>
-    </div>
-
-    <div class="sala-item geral ativa" id="btn-geral" data-sala="geral">
+    <div class="sidebar-header"><h2>Chat</h2></div>
+    <div class="sala-item geral ativa" id="btn-geral">
       <div class="icone">🌐</div>
       <div>
-        <div style="font-weight:600; font-size:0.95rem">Geral</div>
-        <div style="font-size:0.75rem; color:#888">Todos</div>
+        <div style="font-weight:600;font-size:0.95rem">Geral</div>
+        <div style="font-size:0.75rem;color:#888">Todos</div>
       </div>
     </div>
-
     <div class="secao-titulo">Online</div>
     <div id="lista-online"></div>
   </aside>
 
   <div id="main">
     <header>
-      <div style="display:flex; align-items:center; gap:10px; min-width:0; flex:1;">
-        <button id="btn-menu-mobile" aria-label="Menu">☰</button>
+      <div style="display:flex;align-items:center;gap:10px;min-width:0;flex:1;">
+        <button id="btn-menu-mobile">☰</button>
         <h1 id="titulo-sala">Geral</h1>
       </div>
-      <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
+      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
         <button id="btn-trocar-nome">Trocar nome</button>
         <div id="status">...</div>
       </div>
@@ -418,17 +326,18 @@
     <div id="mensagens"></div>
 
     <div class="barra" id="barra">
+      <div id="emoji-picker"></div>
+      <button id="btn-emoji" title="Emoji">😀</button>
       <input type="text" id="input" placeholder="Mensagem..." disabled autocomplete="off" />
-      <button id="btn-enviar" disabled aria-label="Enviar">➤</button>
+      <button id="btn-enviar" disabled>➤</button>
     </div>
   </div>
 
   <script>
     const socket = io();
-    let meuNome = "";
-    let meuId = "";
-    let salaAtual = "geral";
+    let meuNome = "", meuId = "", salaAtual = "geral";
     let usuariosOnline = [];
+    let pendenteSala = null, pendenteTitulo = null;
 
     const telaNome = document.getElementById("tela-nome");
     const nomeInput = document.getElementById("nome-input");
@@ -445,79 +354,155 @@
     const sidebar = document.getElementById("sidebar");
     const overlay = document.getElementById("overlay");
     const mainEl = document.getElementById("main");
+    const btnEmoji = document.getElementById("btn-emoji");
+    const emojiPicker = document.getElementById("emoji-picker");
 
-    // ===== TECLADO MOBILE (corrige posição) =====
+    const modalDefinir = document.getElementById("modal-definir-pin");
+    const modalDigitar = document.getElementById("modal-digitar-pin");
+    const inputDefinirPin = document.getElementById("input-definir-pin");
+    const inputDigitarPin = document.getElementById("input-digitar-pin");
+
+    // Emojis comuns
+    const emojis = ["😀","😂","🥰","😍","😊","😎","😭","😤","🥺","😱","🤔","😴","👍","👎","👏","🙌","🔥","❤️","💔","✨","⭐","🎉","💯","✅","❌","🙏","💪","👀","💬","📌","🚀","🌈","🍕","☕","🎮","📱","💻","🎵","🏆","⚡"];
+    emojis.forEach(e => {
+      const span = document.createElement("span");
+      span.textContent = e;
+      span.addEventListener("click", () => {
+        inputEl.value += e;
+        inputEl.focus();
+      });
+      emojiPicker.appendChild(span);
+    });
+
+    btnEmoji.addEventListener("click", () => {
+      emojiPicker.classList.toggle("aberto");
+    });
+
+    // Fecha emoji ao clicar fora
+    document.addEventListener("click", (e) => {
+      if (!btnEmoji.contains(e.target) && !emojiPicker.contains(e.target)) {
+        emojiPicker.classList.remove("aberto");
+      }
+    });
+
+    // Teclado mobile
     function ajustarViewport() {
       if (!window.visualViewport) return;
-
       const vv = window.visualViewport;
-      // Ajusta a altura do main para a área visível real
       mainEl.style.height = vv.height + "px";
-      // Compensa o scroll do visual viewport (Android)
       mainEl.style.transform = "translateY(" + vv.offsetTop + "px)";
-
-      // Mantém as mensagens no final
       mensagensEl.scrollTop = mensagensEl.scrollHeight;
     }
-
     if (window.visualViewport) {
       window.visualViewport.addEventListener("resize", ajustarViewport);
       window.visualViewport.addEventListener("scroll", ajustarViewport);
     }
-
-    // Também escuta resize normal
     window.addEventListener("resize", ajustarViewport);
-
     inputEl.addEventListener("focus", () => {
       setTimeout(ajustarViewport, 50);
       setTimeout(ajustarViewport, 300);
     });
-
     inputEl.addEventListener("blur", () => {
-      setTimeout(() => {
-        mainEl.style.height = "";
-        mainEl.style.transform = "";
-      }, 100);
+      setTimeout(() => { mainEl.style.height = ""; mainEl.style.transform = ""; }, 100);
     });
 
-    // ===== NOTIFICAÇÕES =====
     function pedirPermissaoNotificacao() {
-      if (!("Notification" in window)) return;
-      if (Notification.permission === "default") Notification.requestPermission();
+      if ("Notification" in window && Notification.permission === "default") {
+        Notification.requestPermission();
+      }
     }
 
     function mostrarNotificacao(nome, texto) {
-      if (!("Notification" in window) || Notification.permission !== "granted") return;
-      if (document.hidden) {
-        const n = new Notification(nome + " disse:", {
-          body: texto,
-          icon: "https://cdn-icons-png.flaticon.com/512/134/134914.png",
-          tag: "chat-mensagem",
-          renotify: true
-        });
-        n.onclick = () => { window.focus(); n.close(); };
-      }
+      if (!("Notification" in window) || Notification.permission !== "granted" || !document.hidden) return;
+      const n = new Notification(nome + " disse:", {
+        body: texto,
+        icon: "https://cdn-icons-png.flaticon.com/512/134/134914.png",
+        tag: "chat-mensagem", renotify: true
+      });
+      n.onclick = () => { window.focus(); n.close(); };
     }
 
     function criarIdSalaPrivada(id1, id2) {
       return "dm_" + [id1, id2].sort().join("_");
     }
 
-    function entrarSala(sala, titulo) {
-      salaAtual = sala;
-      socket.emit("entrar-sala", sala);
-      mensagensEl.innerHTML = "";
-      tituloSala.textContent = titulo;
-
-      document.querySelectorAll(".sala-item").forEach(el => el.classList.remove("ativa"));
-      if (sala === "geral") btnGeral.classList.add("ativa");
-
-      sidebar.classList.remove("aberta");
-      overlay.classList.remove("ativo");
-      inputEl.focus();
+    function entrarSalaComPin(sala, titulo, pin) {
+      socket.emit("entrar-sala", { sala, pin }, (res) => {
+        if (!res || !res.ok) {
+          if (res && res.precisaPin) {
+            // Mostra modal de digitar PIN
+            pendenteSala = sala;
+            pendenteTitulo = titulo;
+            inputDigitarPin.value = "";
+            modalDigitar.classList.add("aberto");
+            inputDigitarPin.focus();
+          }
+          return;
+        }
+        // Entrou com sucesso
+        salaAtual = sala;
+        mensagensEl.innerHTML = "";
+        tituloSala.textContent = titulo;
+        document.querySelectorAll(".sala-item").forEach(el => el.classList.remove("ativa"));
+        if (sala === "geral") btnGeral.classList.add("ativa");
+        sidebar.classList.remove("aberta");
+        overlay.classList.remove("ativo");
+        inputEl.focus();
+      });
     }
 
-    btnGeral.addEventListener("click", () => entrarSala("geral", "Geral"));
+    // Clicar em Geral
+    btnGeral.addEventListener("click", () => {
+      entrarSalaComPin("geral", "Geral", null);
+    });
+
+    // Iniciar conversa privada → pergunta se quer definir PIN
+    function iniciarPrivado(outroId, outroNome) {
+      const sala = criarIdSalaPrivada(meuId, outroId);
+      pendenteSala = sala;
+      pendenteTitulo = outroNome;
+      inputDefinirPin.value = "";
+      modalDefinir.classList.add("aberto");
+      inputDefinirPin.focus();
+    }
+
+    document.getElementById("btn-pin-cancelar").addEventListener("click", () => {
+      modalDefinir.classList.remove("aberto");
+      pendenteSala = null;
+    });
+
+    document.getElementById("btn-pin-ok").addEventListener("click", () => {
+      const pin = inputDefinirPin.value.trim();
+      modalDefinir.classList.remove("aberto");
+      if (!pendenteSala) return;
+
+      // Define o PIN no servidor (se tiver)
+      socket.emit("definir-pin", { sala: pendenteSala, pin: pin || null });
+
+      // Entra na sala
+      entrarSalaComPin(pendenteSala, pendenteTitulo, pin || null);
+    });
+
+    inputDefinirPin.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") document.getElementById("btn-pin-ok").click();
+    });
+
+    // Modal digitar PIN
+    document.getElementById("btn-digitar-cancelar").addEventListener("click", () => {
+      modalDigitar.classList.remove("aberto");
+      pendenteSala = null;
+    });
+
+    document.getElementById("btn-digitar-ok").addEventListener("click", () => {
+      const pin = inputDigitarPin.value.trim();
+      modalDigitar.classList.remove("aberto");
+      if (!pendenteSala) return;
+      entrarSalaComPin(pendenteSala, pendenteTitulo, pin);
+    });
+
+    inputDigitarPin.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") document.getElementById("btn-digitar-ok").click();
+    });
 
     function renderOnline() {
       listaOnline.innerHTML = "";
@@ -533,10 +518,7 @@
           <div style="font-size:0.9rem;">${isEu ? u.nome + " (você)" : u.nome}</div>
         `;
         if (!isEu) {
-          div.addEventListener("click", () => {
-            const sala = criarIdSalaPrivada(meuId, u.id);
-            entrarSala(sala, u.nome);
-          });
+          div.addEventListener("click", () => iniciarPrivado(u.id, u.nome));
         }
         listaOnline.appendChild(div);
       });
@@ -552,11 +534,9 @@
     function entrar(nomeSalvo = null) {
       const nome = nomeSalvo || nomeInput.value.trim();
       if (!nome) return;
-
       meuNome = nome;
       localStorage.setItem("chat_nome", meuNome);
       socket.emit("entrar", meuNome);
-
       telaNome.style.display = "none";
       inputEl.disabled = false;
       btnEnviar.disabled = false;
@@ -578,11 +558,11 @@
     function enviar() {
       const texto = inputEl.value.trim();
       if (!texto || !meuNome) return;
-
       const hora = new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
       socket.emit("mensagem", { sala: salaAtual, nome: meuNome, texto, hora });
       inputEl.value = "";
       inputEl.focus();
+      emojiPicker.classList.remove("aberto");
     }
 
     btnEnviar.addEventListener("click", enviar);
@@ -590,7 +570,6 @@
 
     socket.on("mensagem", (data) => {
       if (data.sala !== salaAtual) return;
-
       const div = document.createElement("div");
       div.className = "msg " + (data.nome === meuNome ? "eu" : "outro");
       div.innerHTML = `
@@ -600,7 +579,6 @@
       `;
       mensagensEl.appendChild(div);
       mensagensEl.scrollTop = mensagensEl.scrollHeight;
-
       if (data.nome !== meuNome) mostrarNotificacao(data.nome, data.texto);
     });
 
@@ -630,7 +608,6 @@
       overlay.classList.remove("ativo");
     });
 
-    // Ajuste inicial
     ajustarViewport();
   </script>
 </body>
