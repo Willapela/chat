@@ -5,7 +5,10 @@ const path = require("path");
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
+const io = new Server(server, {
+  // Permite mensagens com fotos comprimidas pelo navegador sem aceitar payloads enormes.
+  maxHttpBufferSize: 6 * 1024 * 1024
+});
 
 app.use(express.static(path.join(__dirname, "public")));
 
@@ -76,9 +79,34 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("mensagem", (data) => {
-    if (!data.sala || !data.texto) return;
-    io.to(data.sala).emit("mensagem", data);
+  socket.on("mensagem", (data = {}) => {
+    const sala = typeof data.sala === "string" ? data.sala.trim().slice(0, 120) : "";
+    const tipo = data.tipo === "imagem" ? "imagem" : "texto";
+    const texto = typeof data.texto === "string" ? data.texto.trim().slice(0, 4000) : "";
+    const hora = typeof data.hora === "string" ? data.hora.slice(0, 8) : "";
+
+    // Impede que um cliente publique em uma sala em que não está conectado.
+    if (!sala || !socket.rooms.has(sala)) return;
+
+    const mensagem = {
+      sala,
+      nome: socket.nome || "Anônimo",
+      tipo,
+      texto,
+      hora
+    };
+
+    if (tipo === "imagem") {
+      const imagem = typeof data.imagem === "string" ? data.imagem : "";
+      const imagemValida = /^data:image\/(?:jpeg|png|gif|webp);base64,[A-Za-z0-9+/=]+$/.test(imagem);
+      if (!imagemValida || imagem.length > 5 * 1024 * 1024) return;
+      mensagem.imagem = imagem;
+      mensagem.texto = texto || "Foto";
+    } else {
+      if (!texto) return;
+    }
+
+    io.to(sala).emit("mensagem", mensagem);
   });
 
   socket.on("disconnect", () => {
