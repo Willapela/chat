@@ -2,255 +2,788 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mensagem Popup</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Chat</title>
+  <script src="/socket.io/socket.io.js"></script>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      height: 100%;
+      height: 100dvh;
+      overflow: hidden;
+      position: fixed;
+      width: 100%;
     }
 
     body {
       font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
-      background: #111;
+      background: #0f0f0f;
       color: #fff;
-      min-height: 100vh;
+      display: flex;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    #sidebar {
+      width: 280px;
+      background: #161616;
+      border-right: 1px solid #2a2a2a;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      height: 100%;
+    }
+
+    .sidebar-header {
+      padding: 16px;
+      border-bottom: 1px solid #2a2a2a;
+      min-height: 56px;
       display: flex;
       align-items: center;
-      justify-content: center;
-      padding: 20px;
     }
 
-    /* O "popup" */
-    .popup {
-      background: #1e1e1e;
-      border-radius: 16px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
-      width: 100%;
-      max-width: 560px;
-      overflow: hidden;
-      border: 1px solid #333;
-    }
+    .sidebar-header h2 { font-size: 1.15rem; font-weight: 600; }
 
-    /* Cabeçalho do popup */
-    .popup-header {
-      background: #2a2a2a;
-      padding: 12px 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 1px solid #333;
-      cursor: default;
-      user-select: none;
-    }
-
-    .popup-title {
-      font-size: 0.9rem;
-      color: #aaa;
-      font-weight: 500;
-    }
-
-    .popup-actions {
-      display: flex;
-      gap: 8px;
-    }
-
-    .btn-icon {
-      width: 28px;
-      height: 28px;
-      border-radius: 6px;
-      border: none;
-      background: transparent;
-      color: #888;
-      font-size: 1rem;
+    .sala-item {
+      padding: 14px 16px;
       cursor: pointer;
       display: flex;
       align-items: center;
-      justify-content: center;
-      transition: all 0.15s;
+      gap: 12px;
+      border-left: 3px solid transparent;
+      min-height: 56px;
+    }
+    .sala-item:active { background: #222; }
+    .sala-item.ativa { background: #1e2a3a; border-left-color: #3b82f6; }
+
+    .sala-item .icone {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: #2a2a2a; display: flex; align-items: center;
+      justify-content: center; font-size: 1rem; flex-shrink: 0;
+    }
+    .sala-item.geral .icone { background: #3b82f6; }
+
+    .online-dot {
+      width: 9px; height: 9px; background: #22c55e;
+      border-radius: 50%; position: absolute; bottom: 0; right: 0;
+      border: 2px solid #161616;
     }
 
-    .btn-icon:hover {
-      background: #3a3a3a;
-      color: #fff;
+    #lista-online {
+      flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+      padding: 4px 0 20px;
     }
 
-    /* Área da mensagem */
-    .mensagem-area {
-      padding: 40px 30px;
-      min-height: 160px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
+    .secao-titulo {
+      padding: 14px 16px 8px; font-size: 0.75rem;
+      color: #666; text-transform: uppercase; letter-spacing: 0.5px;
     }
 
-    #mensagem {
-      font-size: clamp(1.6rem, 4.5vw, 2.4rem);
-      font-weight: 700;
-      line-height: 1.3;
-      word-break: break-word;
-      color: #fff;
+    .usuario-item {
+      padding: 12px 16px; cursor: pointer;
+      display: flex; align-items: center; gap: 12px; min-height: 52px;
+    }
+    .usuario-item:active { background: #222; }
+    .usuario-item.eu { opacity: 0.55; cursor: default; }
+
+    .usuario-item .avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: #333; display: flex; align-items: center;
+      justify-content: center; font-size: 0.9rem; font-weight: 600;
+      position: relative; flex-shrink: 0;
     }
 
-    /* Barra de digitação */
+    #main {
+      flex: 1; display: flex; flex-direction: column;
+      min-width: 0; height: 100%; overflow: hidden;
+    }
+
+    header {
+      background: #1a1a1a; padding: 12px 16px;
+      border-bottom: 1px solid #2a2a2a;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 10px; min-height: 56px; flex-shrink: 0;
+    }
+
+    header h1 {
+      font-size: 1.05rem; font-weight: 600;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
+    #status { font-size: 0.78rem; color: #888; }
+    #status.online { color: #22c55e; }
+
+    #mensagens {
+      flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+      padding: 16px; display: flex; flex-direction: column;
+      gap: 10px; min-height: 0;
+    }
+
+    .msg {
+      max-width: 85%; padding: 10px 14px; border-radius: 14px;
+      line-height: 1.4; word-break: break-word; font-size: 0.95rem;
+      animation: aparecer 0.2s ease;
+    }
+    @keyframes aparecer {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .msg.eu { align-self: flex-end; background: #3b82f6; border-bottom-right-radius: 4px; }
+    .msg.outro { align-self: flex-start; background: #2a2a2a; border-bottom-left-radius: 4px; }
+    .msg .nome { font-size: 0.72rem; font-weight: 600; margin-bottom: 3px; opacity: 0.85; }
+    .msg .hora { font-size: 0.68rem; opacity: 0.55; margin-top: 4px; text-align: right; }
+    .msg.imagem { padding: 6px; }
+    .msg-foto {
+      display: block; width: auto; max-width: min(320px, 100%); max-height: 360px;
+      border-radius: 10px; object-fit: contain; background: #111; cursor: zoom-in;
+    }
+    .msg.imagem .nome { padding: 4px 8px 0; }
+    .msg.imagem .hora { padding: 0 8px 4px; }
+
     .barra {
-      padding: 16px;
-      background: #181818;
-      border-top: 1px solid #2a2a2a;
-      display: flex;
-      gap: 10px;
+      background: #1a1a1a; border-top: 1px solid #2a2a2a;
+      padding: 10px 12px; padding-bottom: max(10px, env(safe-area-inset-bottom));
+      display: flex; gap: 8px; flex-shrink: 0; align-items: center;
+      position: relative;
     }
 
     #input {
-      flex: 1;
-      background: #2d2d2d;
-      border: 1px solid #3a3a3a;
-      border-radius: 10px;
-      padding: 12px 16px;
-      font-size: 1rem;
-      color: white;
-      outline: none;
-      transition: border-color 0.2s, background 0.2s;
+      flex: 1; background: #2d2d2d; border: 1px solid #3a3a3a;
+      border-radius: 22px; padding: 12px 16px; font-size: 16px;
+      color: white; outline: none; min-width: 0;
     }
+    #input:focus { border-color: #3b82f6; }
+    #input::placeholder { color: #777; }
 
-    #input:focus {
-      border-color: #3b82f6;
-      background: #333;
+    #btn-emoji, #btn-foto, #btn-enviar {
+      background: #2d2d2d; color: white; border: none;
+      border-radius: 50%; width: 42px; height: 42px;
+      font-size: 1.2rem; cursor: pointer; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: transform 0.16s ease, background 0.16s ease;
     }
-
-    #input::placeholder {
-      color: #777;
+    #btn-emoji:active, #btn-foto:active, #btn-enviar:active { transform: scale(0.96); }
+    #btn-foto:disabled, #btn-enviar:disabled { background: #374151; cursor: not-allowed; }
+    #btn-enviar { background: #3b82f6; font-size: 1.1rem; }
+    #foto-status {
+      display: none; position: absolute; left: 12px; bottom: calc(100% + 8px);
+      max-width: calc(100% - 24px); padding: 8px 12px; border-radius: 10px;
+      background: #252525; border: 1px solid #3a3a3a; color: #ddd;
+      font-size: 0.8rem; box-shadow: 0 8px 20px rgba(0,0,0,0.25);
     }
+    #foto-status.visivel { display: block; }
 
-    .btn-enviar {
-      background: #3b82f6;
-      color: white;
-      border: none;
-      border-radius: 10px;
-      padding: 12px 20px;
-      font-size: 0.95rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s, transform 0.1s;
-      white-space: nowrap;
-    }
-
-    .btn-enviar:hover {
-      background: #2563eb;
-    }
-
-    .btn-enviar:active {
-      transform: scale(0.97);
-    }
-
-    /* Botão para abrir em janela popup real */
-    .btn-abrir-popup {
-      background: #374151;
-      color: #ddd;
-      border: none;
-      border-radius: 10px;
-      padding: 12px 16px;
-      font-size: 0.9rem;
-      cursor: pointer;
-      transition: background 0.2s;
-      white-space: nowrap;
-    }
-
-    .btn-abrir-popup:hover {
-      background: #4b5563;
-    }
-
-    /* Quando aberto como janela popup pequena */
-    body.modo-popup {
+    /* Emoji picker */
+    #emoji-picker {
+      display: none;
+      position: absolute;
+      bottom: 100%;
+      left: 0; right: 0;
       background: #1e1e1e;
-      padding: 0;
+      border-top: 1px solid #333;
+      padding: 12px;
+      max-height: 260px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      z-index: 20;
+    }
+    #emoji-picker.aberto { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; }
+    #emoji-picker span {
+      font-size: 1.5rem; text-align: center; padding: 6px;
+      cursor: pointer; border-radius: 8px;
+    }
+    #emoji-picker span:active { background: #333; }
+
+    #btn-menu-mobile {
+      display: none; background: none; border: none;
+      color: #fff; font-size: 1.4rem; cursor: pointer; padding: 6px;
     }
 
-    body.modo-popup .popup {
-      max-width: none;
-      width: 100%;
-      height: 100vh;
-      border-radius: 0;
-      border: none;
-      box-shadow: none;
+    #btn-trocar-nome {
+      background: transparent; border: none; color: #888;
+      font-size: 0.78rem; cursor: pointer; padding: 6px 8px;
+    }
+
+    /* Modais PIN */
+    .modal {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.7); z-index: 250;
+      align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal.aberto { display: flex; }
+
+    .modal-box {
+      background: #1e1e1e; border-radius: 16px; padding: 24px;
+      width: 100%; max-width: 340px; border: 1px solid #333;
+      text-align: center;
+    }
+    .modal-box h3 { margin-bottom: 8px; font-size: 1.15rem; }
+    .modal-box p { color: #888; font-size: 0.9rem; margin-bottom: 16px; }
+    .modal-box input {
+      width: 100%; background: #2d2d2d; border: 1px solid #3a3a3a;
+      border-radius: 10px; padding: 12px; font-size: 16px;
+      color: white; outline: none; text-align: center;
+      letter-spacing: 4px; margin-bottom: 14px;
+    }
+    .modal-box input:focus { border-color: #3b82f6; }
+    .modal-botoes { display: flex; gap: 10px; }
+    .modal-botoes button {
+      flex: 1; padding: 12px; border: none; border-radius: 10px;
+      font-size: 0.95rem; font-weight: 600; cursor: pointer;
+    }
+    .btn-cancelar { background: #333; color: #ccc; }
+    .btn-confirmar { background: #3b82f6; color: white; }
+
+    /* Tela de nome */
+    #tela-nome {
+      position: fixed; inset: 0; background: #0f0f0f;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 300; padding: 20px;
+    }
+    .caixa-nome {
+      background: #1e1e1e; padding: 28px 24px; border-radius: 18px;
+      width: 100%; max-width: 360px; text-align: center; border: 1px solid #333;
+    }
+    .caixa-nome h2 { margin-bottom: 8px; font-size: 1.25rem; }
+    .caixa-nome p { color: #888; font-size: 0.9rem; margin-bottom: 20px; }
+    #nome-input {
+      width: 100%; background: #2d2d2d; border: 1px solid #3a3a3a;
+      border-radius: 12px; padding: 14px 16px; font-size: 16px;
+      color: white; outline: none; margin-bottom: 14px;
+    }
+    #nome-input:focus { border-color: #3b82f6; }
+    #btn-entrar {
+      width: 100%; background: #3b82f6; color: white; border: none;
+      border-radius: 12px; padding: 14px; font-size: 1rem; font-weight: 600;
+    }
+
+    .overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.55); z-index: 140;
+    }
+    .overlay.ativo { display: block; }
+
+    @media (max-width: 768px) {
+      #sidebar {
+        position: fixed; left: -300px; top: 0; bottom: 0;
+        z-index: 150; width: 85%; max-width: 300px;
+        transition: left 0.25s ease; box-shadow: 4px 0 20px rgba(0,0,0,0.4);
+      }
+      #sidebar.aberta { left: 0; }
+      #btn-menu-mobile { display: block; }
+      .msg { max-width: 90%; }
     }
   </style>
 </head>
 <body>
-  <div class="popup">
-    <div class="popup-header">
-      <div class="popup-title">Mensagem Popup</div>
-      <div class="popup-actions">
-        <button class="btn-icon" id="btn-limpar" title="Limpar mensagem">✕</button>
+
+  <div id="tela-nome">
+    <div class="caixa-nome">
+      <h2>Entrar no Chat</h2>
+      <p>Digite um nome para começar</p>
+      <input type="text" id="nome-input" placeholder="Seu nome..." maxlength="20" autofocus autocomplete="off" />
+      <button id="btn-entrar">Entrar</button>
+    </div>
+  </div>
+
+  <!-- Modal definir PIN -->
+  <div class="modal" id="modal-definir-pin">
+    <div class="modal-box">
+      <h3>Proteger conversa</h3>
+      <p>Defina um PIN para que só quem souber possa entrar. Deixe em branco para sem PIN.</p>
+      <input type="text" id="input-definir-pin" placeholder="PIN (opcional)" maxlength="12" inputmode="numeric" />
+      <div class="modal-botoes">
+        <button class="btn-cancelar" id="btn-pin-cancelar">Cancelar</button>
+        <button class="btn-confirmar" id="btn-pin-ok">Continuar</button>
       </div>
     </div>
+  </div>
 
-    <div class="mensagem-area">
-      <div id="mensagem">Digite a mensagem e aperte Enter</div>
+  <!-- Modal digitar PIN -->
+  <div class="modal" id="modal-digitar-pin">
+    <div class="modal-box">
+      <h3>Conversa protegida</h3>
+      <p>Digite o PIN para entrar</p>
+      <input type="text" id="input-digitar-pin" placeholder="PIN" maxlength="12" inputmode="numeric" />
+      <div class="modal-botoes">
+        <button class="btn-cancelar" id="btn-digitar-cancelar">Cancelar</button>
+        <button class="btn-confirmar" id="btn-digitar-ok">Entrar</button>
+      </div>
     </div>
+  </div>
 
-    <div class="barra">
-      <input 
-        type="text" 
-        id="input" 
-        placeholder="Digite sua mensagem..." 
-        autofocus
-        autocomplete="off"
-      />
-      <button class="btn-enviar" id="btn-enviar">Enviar</button>
-      <button class="btn-abrir-popup" id="btn-popup">Abrir Popup</button>
+  <div class="overlay" id="overlay"></div>
+
+  <aside id="sidebar">
+    <div class="sidebar-header"><h2>Chat</h2></div>
+    <div class="sala-item geral ativa" id="btn-geral">
+      <div class="icone">🌐</div>
+      <div>
+        <div style="font-weight:600;font-size:0.95rem">Geral</div>
+        <div style="font-size:0.75rem;color:#888">Todos</div>
+      </div>
+    </div>
+    <div class="secao-titulo">Online</div>
+    <div id="lista-online"></div>
+  </aside>
+
+  <div id="main">
+    <header>
+      <div style="display:flex;align-items:center;gap:10px;min-width:0;flex:1;">
+        <button id="btn-menu-mobile">☰</button>
+        <h1 id="titulo-sala">Geral</h1>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+        <button id="btn-trocar-nome">Trocar nome</button>
+        <div id="status">...</div>
+      </div>
+    </header>
+
+    <div id="mensagens"></div>
+
+    <div class="barra" id="barra">
+      <div id="emoji-picker"></div>
+      <div id="foto-status" role="status" aria-live="polite"></div>
+      <button id="btn-emoji" title="Emoji">😀</button>
+      <button id="btn-foto" title="Enviar foto" aria-label="Enviar foto" disabled>📷</button>
+      <input type="file" id="input-foto" accept="image/*" hidden />
+      <input type="text" id="input" placeholder="Mensagem..." disabled autocomplete="off" />
+      <button id="btn-enviar" disabled>➤</button>
     </div>
   </div>
 
   <script>
-    const mensagemEl = document.getElementById("mensagem");
+    const socket = io();
+    let meuNome = "", meuId = "", salaAtual = "geral";
+    let usuariosOnline = [];
+    let pendenteSala = null, pendenteTitulo = null;
+
+    const telaNome = document.getElementById("tela-nome");
+    const nomeInput = document.getElementById("nome-input");
+    const btnEntrar = document.getElementById("btn-entrar");
+    const mensagensEl = document.getElementById("mensagens");
     const inputEl = document.getElementById("input");
     const btnEnviar = document.getElementById("btn-enviar");
-    const btnLimpar = document.getElementById("btn-limpar");
-    const btnPopup = document.getElementById("btn-popup");
+    const statusEl = document.getElementById("status");
+    const listaOnline = document.getElementById("lista-online");
+    const tituloSala = document.getElementById("titulo-sala");
+    const btnGeral = document.getElementById("btn-geral");
+    const btnTrocarNome = document.getElementById("btn-trocar-nome");
+    const btnMenuMobile = document.getElementById("btn-menu-mobile");
+    const sidebar = document.getElementById("sidebar");
+    const overlay = document.getElementById("overlay");
+    const mainEl = document.getElementById("main");
+    const btnEmoji = document.getElementById("btn-emoji");
+    const emojiPicker = document.getElementById("emoji-picker");
+    const btnFoto = document.getElementById("btn-foto");
+    const inputFoto = document.getElementById("input-foto");
+    const fotoStatus = document.getElementById("foto-status");
 
-    // Detecta se já está rodando em janela popup
-    if (window.opener || window.name === "mensagemPopup") {
-      document.body.classList.add("modo-popup");
-      btnPopup.style.display = "none";
+    const modalDefinir = document.getElementById("modal-definir-pin");
+    const modalDigitar = document.getElementById("modal-digitar-pin");
+    const inputDefinirPin = document.getElementById("input-definir-pin");
+    const inputDigitarPin = document.getElementById("input-digitar-pin");
+
+    // Emojis (lista ampliada)
+    const emojis = [
+      // Carinhas
+      "😀","😃","😄","😁","😆","😅","🤣","😂","🙂","🙃","😉","😊","😇","🥰","😍","🤩","😘","😗","☺️","😚","😙","🥲","😋","😛","😜","🤪","😝","🤑","🤗","🤭","🤫","🤔","🤐","🤨","😐","😑","😶","😏","😒","🙄","😬","😮‍💨","🤥","😌","😔","😪","🤤","😴","😷","🤒","🤕","🤢","🤮","🥵","🥶","🥴","😵","🤯","🤠","🥳","🥸","😎","🤓","🧐",
+      // Gestos
+      "👍","👎","👊","✊","🤛","🤜","👏","🙌","👐","🤲","🤝","🙏","✍️","💅","🤳","💪","🦾","🦵","🦶","👂","👃","🧠","👀","👁️","👅","👄","💋",
+      // Corações e símbolos
+      "❤️","🧡","💛","💚","💙","💜","🖤","🤍","🤎","💔","❣️","💕","💞","💓","💗","💖","💘","💝","💟","♥️","✨","⭐","🌟","💫","⚡","🔥","💥","💢","💦","💨","🕳️","💣","💬","👁️‍🗨️","🗨️","🗯️","💭","💤",
+      // Status / reações
+      "🎉","🎊","🎈","🎁","🏆","🥇","🥈","🥉","⚽","🏀","🎮","🎯","🎲","🧩","🎵","🎶","🎤","🎧","🎬","📱","💻","🖥️","⌨️","🖨️","🖱️","🕹️","📷","📸","📹","🎥","🔍","💡","📚","✏️","📝","📌","📍","✂️","🔒","🔓","🔑","🔔","🔕","✅","❌","⭕","❗","❓","‼️","⁉️","💯","🔴","🟠","🟡","🟢","🔵","🟣","⚫","⚪",
+      // Natureza e comida
+      "🌈","☀️","🌙","⭐","🌍","🌸","🌺","🌻","🌹","🌷","🍀","🌲","🌴","🌵","🌊","🐶","🐱","🐭","🐹","🐰","🦊","🐻","🐼","🐨","🐯","🦁","🐮","🐷","🐸","🐵","🐔","🐧","🐦","🐤","🦄","🐝","🦋","🐢","🐍","🐙","🦑","🦐","🦞","🦀","🐡","🐠","🐟","🐬","🐳","🦈",
+      "🍎","🍐","🍊","🍋","🍌","🍉","🍇","🍓","🫐","🍈","🍒","🍑","🥭","🍍","🥥","🥝","🍅","🥑","🍆","🌶️","🫑","🥒","🥬","🥦","🧄","🧅","🍄","🥜","🌰","🍞","🥐","🥖","🫓","🥨","🧀","🥚","🍳","🧈","🥞","🧇","🥓","🥩","🍗","🍖","🌭","🍔","🍟","🍕","🫓","🥪","🌮","🌯","🥙","🧆","🍝","🍜","🍲","🍛","🍣","🍱","🥟","🦪","🍤","🍙","🍚","🍘","🍥","🥠","🥮","🍢","🍡","🍧","🍨","🍦","🥧","🧁","🍰","🎂","🍮","🍭","🍬","🍫","🍿","🍩","🍪","🌰","🍯","🥛","🍼","☕","🍵","🧃","🥤","🧋","🍶","🍺","🍻","🥂","🍷","🥃","🍸","🍹","🧉","🍾"
+    ];
+    emojis.forEach(e => {
+      const span = document.createElement("span");
+      span.textContent = e;
+      span.addEventListener("click", () => {
+        inputEl.value += e;
+        inputEl.focus();
+      });
+      emojiPicker.appendChild(span);
+    });
+
+    btnEmoji.addEventListener("click", () => {
+      emojiPicker.classList.toggle("aberto");
+    });
+
+    // Fecha emoji ao clicar fora
+    document.addEventListener("click", (e) => {
+      if (!btnEmoji.contains(e.target) && !emojiPicker.contains(e.target)) {
+        emojiPicker.classList.remove("aberto");
+      }
+    });
+
+    // Teclado mobile
+    function ajustarViewport() {
+      if (!window.visualViewport) return;
+      const vv = window.visualViewport;
+      mainEl.style.height = vv.height + "px";
+      mainEl.style.transform = "translateY(" + vv.offsetTop + "px)";
+      mensagensEl.scrollTop = mensagensEl.scrollHeight;
+    }
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", ajustarViewport);
+      window.visualViewport.addEventListener("scroll", ajustarViewport);
+    }
+    window.addEventListener("resize", ajustarViewport);
+    inputEl.addEventListener("focus", () => {
+      setTimeout(ajustarViewport, 50);
+      setTimeout(ajustarViewport, 300);
+    });
+    inputEl.addEventListener("blur", () => {
+      setTimeout(() => { mainEl.style.height = ""; mainEl.style.transform = ""; }, 100);
+    });
+
+    // Som simples de notificação
+    function tocarSom() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.connect(g);
+        g.connect(ctx.destination);
+        o.frequency.value = 880;
+        g.gain.value = 0.08;
+        o.start();
+        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+        o.stop(ctx.currentTime + 0.3);
+      } catch (e) {}
     }
 
-    function atualizarMensagem() {
-      const texto = inputEl.value.trim();
-      if (texto) {
-        mensagemEl.textContent = texto;
-        inputEl.value = "";
-        inputEl.focus();
+    function pedirPermissaoNotificacao() {
+      if (!("Notification" in window)) return;
+      if (Notification.permission === "default") {
+        Notification.requestPermission();
       }
     }
 
-    function limparMensagem() {
-      mensagemEl.textContent = "Digite a mensagem e aperte Enter";
-      inputEl.focus();
+    function mostrarNotificacao(nome, texto, forcar) {
+      // Som sempre que a aba não está em foco
+      if (document.hidden || document.visibilityState === "hidden" || forcar) {
+        tocarSom();
+      }
+
+      if (!("Notification" in window)) return;
+      if (Notification.permission !== "granted") return;
+
+      // Notifica se a aba estiver em segundo plano OU se for de outra sala
+      if (document.hidden || document.visibilityState === "hidden" || forcar) {
+        try {
+          const n = new Notification(nome + " disse:", {
+            body: texto,
+            icon: "https://cdn-icons-png.flaticon.com/512/134/134914.png",
+            tag: "chat-mensagem",
+            renotify: true,
+            requireInteraction: false
+          });
+          n.onclick = () => { window.focus(); n.close(); };
+        } catch (e) {}
+      }
     }
 
-    // Enter ou botão Enviar
-    inputEl.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") atualizarMensagem();
-    });
-    btnEnviar.addEventListener("click", atualizarMensagem);
-    btnLimpar.addEventListener("click", limparMensagem);
+    function criarIdSalaPrivada(id1, id2) {
+      return "dm_" + [id1, id2].sort().join("_");
+    }
 
-    // Abrir em janela popup pequena
-    btnPopup.addEventListener("click", () => {
-      const largura = 580;
-      const altura = 280;
-      const left = (screen.width - largura) / 2;
-      const top = (screen.height - altura) / 2;
+    function entrarSalaComPin(sala, titulo, pin) {
+      socket.emit("entrar-sala", { sala, pin }, (res) => {
+        if (!res || !res.ok) {
+          if (res && res.precisaPin) {
+            // Mostra modal de digitar PIN
+            pendenteSala = sala;
+            pendenteTitulo = titulo;
+            inputDigitarPin.value = "";
+            modalDigitar.classList.add("aberto");
+            inputDigitarPin.focus();
+          }
+          return;
+        }
+        // Entrou com sucesso
+        salaAtual = sala;
+        mensagensEl.innerHTML = "";
+        tituloSala.textContent = titulo;
+        document.querySelectorAll(".sala-item").forEach(el => el.classList.remove("ativa"));
+        if (sala === "geral") btnGeral.classList.add("ativa");
+        sidebar.classList.remove("aberta");
+        overlay.classList.remove("ativo");
+        inputEl.focus();
+      });
+    }
 
-      window.open(
-        window.location.href,
-        "mensagemPopup",
-        `width=${largura},height=${altura},left=${left},top=${top},resizable=yes,scrollbars=no,status=no,toolbar=no,menubar=no,location=no`
-      );
+    // Clicar em Geral
+    btnGeral.addEventListener("click", () => {
+      entrarSalaComPin("geral", "Geral", null);
     });
+
+    // Iniciar conversa privada → pergunta se quer definir PIN
+    function iniciarPrivado(outroId, outroNome) {
+      const sala = criarIdSalaPrivada(meuId, outroId);
+      pendenteSala = sala;
+      pendenteTitulo = outroNome;
+      inputDefinirPin.value = "";
+      modalDefinir.classList.add("aberto");
+      inputDefinirPin.focus();
+    }
+
+    document.getElementById("btn-pin-cancelar").addEventListener("click", () => {
+      modalDefinir.classList.remove("aberto");
+      pendenteSala = null;
+    });
+
+    document.getElementById("btn-pin-ok").addEventListener("click", () => {
+      const pin = inputDefinirPin.value.trim();
+      modalDefinir.classList.remove("aberto");
+      if (!pendenteSala) return;
+
+      // Define o PIN no servidor (se tiver)
+      socket.emit("definir-pin", { sala: pendenteSala, pin: pin || null });
+
+      // Entra na sala
+      entrarSalaComPin(pendenteSala, pendenteTitulo, pin || null);
+    });
+
+    inputDefinirPin.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") document.getElementById("btn-pin-ok").click();
+    });
+
+    // Modal digitar PIN
+    document.getElementById("btn-digitar-cancelar").addEventListener("click", () => {
+      modalDigitar.classList.remove("aberto");
+      pendenteSala = null;
+    });
+
+    document.getElementById("btn-digitar-ok").addEventListener("click", () => {
+      const pin = inputDigitarPin.value.trim();
+      modalDigitar.classList.remove("aberto");
+      if (!pendenteSala) return;
+      entrarSalaComPin(pendenteSala, pendenteTitulo, pin);
+    });
+
+    inputDigitarPin.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") document.getElementById("btn-digitar-ok").click();
+    });
+
+    function renderOnline() {
+      listaOnline.innerHTML = "";
+      usuariosOnline.forEach(u => {
+        const isEu = u.id === meuId;
+        const div = document.createElement("div");
+        div.className = "usuario-item" + (isEu ? " eu" : "");
+        div.innerHTML = `
+          <div class="avatar">
+            ${u.nome.charAt(0).toUpperCase()}
+            <div class="online-dot"></div>
+          </div>
+          <div style="font-size:0.9rem;">${isEu ? u.nome + " (você)" : u.nome}</div>
+        `;
+        if (!isEu) {
+          div.addEventListener("click", () => iniciarPrivado(u.id, u.nome));
+        }
+        listaOnline.appendChild(div);
+      });
+    }
+
+    socket.on("usuarios-online", (lista) => {
+      usuariosOnline = lista;
+      const eu = lista.find(u => u.nome === meuNome);
+      if (eu) meuId = eu.id;
+      renderOnline();
+    });
+
+    function entrar(nomeSalvo = null) {
+      const nome = nomeSalvo || nomeInput.value.trim();
+      if (!nome) return;
+      meuNome = nome;
+      localStorage.setItem("chat_nome", meuNome);
+      socket.emit("entrar", meuNome);
+      telaNome.style.display = "none";
+      inputEl.disabled = false;
+      btnEnviar.disabled = false;
+      btnFoto.disabled = false;
+      inputEl.focus();
+      pedirPermissaoNotificacao();
+    }
+
+    const nomeSalvo = localStorage.getItem("chat_nome");
+    if (nomeSalvo) entrar(nomeSalvo);
+
+    btnEntrar.addEventListener("click", () => entrar());
+    nomeInput.addEventListener("keydown", (e) => { if (e.key === "Enter") entrar(); });
+
+    btnTrocarNome.addEventListener("click", () => {
+      localStorage.removeItem("chat_nome");
+      location.reload();
+    });
+
+    function enviar() {
+      const texto = inputEl.value.trim();
+      if (!texto || !meuNome) return;
+      const hora = new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+      socket.emit("mensagem", { sala: salaAtual, texto, hora });
+      inputEl.value = "";
+      inputEl.focus();
+      emojiPicker.classList.remove("aberto");
+    }
+
+    function mostrarStatusFoto(texto) {
+      fotoStatus.textContent = texto;
+      fotoStatus.classList.toggle("visivel", Boolean(texto));
+    }
+
+    function lerArquivoComoDataUrl(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(new Error("Não foi possível ler a foto."));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function prepararFoto(file) {
+      if (!file || !file.type.startsWith("image/")) {
+        throw new Error("Escolha um arquivo de imagem válido.");
+      }
+      if (file.size > 12 * 1024 * 1024) {
+        throw new Error("A foto precisa ter no máximo 12 MB.");
+      }
+
+      const origem = await lerArquivoComoDataUrl(file);
+      const imagem = await new Promise((resolve, reject) => {
+        const elemento = new Image();
+        elemento.onload = () => resolve(elemento);
+        elemento.onerror = () => reject(new Error("Não foi possível processar a foto."));
+        elemento.src = origem;
+      });
+
+      const maiorLado = Math.max(imagem.naturalWidth, imagem.naturalHeight);
+      const escala = Math.min(1, 1600 / maiorLado);
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.max(1, Math.round(imagem.naturalWidth * escala));
+      canvas.height = Math.max(1, Math.round(imagem.naturalHeight * escala));
+      const contexto = canvas.getContext("2d");
+      contexto.fillStyle = "#ffffff";
+      contexto.fillRect(0, 0, canvas.width, canvas.height);
+
+      let qualidade = 0.82;
+      let resultado = "";
+      do {
+        contexto.drawImage(imagem, 0, 0, canvas.width, canvas.height);
+        resultado = canvas.toDataURL("image/jpeg", qualidade);
+        qualidade -= 0.08;
+      } while (resultado.length > 4.6 * 1024 * 1024 && qualidade >= 0.5);
+
+      if (resultado.length > 4.6 * 1024 * 1024) {
+        throw new Error("Não foi possível reduzir a foto para o tamanho permitido.");
+      }
+      return resultado;
+    }
+
+    async function enviarFoto(file) {
+      if (!file || !meuNome || btnFoto.disabled) return;
+      btnFoto.disabled = true;
+      mostrarStatusFoto("Preparando foto...");
+
+      try {
+        const imagem = await prepararFoto(file);
+        const hora = new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+        socket.emit("mensagem", { sala: salaAtual, tipo: "imagem", imagem, texto: "Foto", hora });
+        mostrarStatusFoto("Foto enviada");
+        setTimeout(() => mostrarStatusFoto(""), 1200);
+      } catch (erro) {
+        mostrarStatusFoto(erro.message || "Não foi possível enviar a foto.");
+        setTimeout(() => mostrarStatusFoto(""), 3000);
+      } finally {
+        inputFoto.value = "";
+        btnFoto.disabled = false;
+      }
+    }
+
+    btnEnviar.addEventListener("click", enviar);
+    btnFoto.addEventListener("click", () => inputFoto.click());
+    inputFoto.addEventListener("change", () => enviarFoto(inputFoto.files[0]));
+    inputEl.addEventListener("keydown", (e) => { if (e.key === "Enter") enviar(); });
+
+    socket.on("mensagem", (data) => {
+      const deOutro = data.nome !== meuNome;
+      const outraSala = data.sala !== salaAtual;
+
+      // Notificação: de outra pessoa
+      if (deOutro) {
+        // Se for de outra sala, força notificação; se for da sala atual, só se aba estiver escondida
+        mostrarNotificacao(data.nome, data.texto, outraSala);
+      }
+
+      // Só mostra na tela se for da sala atual
+      if (outraSala) return;
+
+      const div = document.createElement("div");
+      const ehImagem = data.tipo === "imagem" && typeof data.imagem === "string";
+      div.className = "msg " + (data.nome === meuNome ? "eu" : "outro") + (ehImagem ? " imagem" : "");
+
+      const nomeEl = document.createElement("div");
+      nomeEl.className = "nome";
+      nomeEl.textContent = data.nome === meuNome ? "Você" : (data.nome || "Anônimo");
+      div.appendChild(nomeEl);
+
+      if (ehImagem) {
+        const linkEl = document.createElement("a");
+        linkEl.href = data.imagem;
+        linkEl.target = "_blank";
+        linkEl.rel = "noopener noreferrer";
+        linkEl.title = "Abrir foto em tamanho maior";
+        const imagemEl = document.createElement("img");
+        imagemEl.className = "msg-foto";
+        imagemEl.src = data.imagem;
+        imagemEl.alt = "Foto enviada por " + (data.nome || "Anônimo");
+        linkEl.appendChild(imagemEl);
+        div.appendChild(linkEl);
+      } else {
+        const textoEl = document.createElement("div");
+        textoEl.textContent = data.texto || "";
+        div.appendChild(textoEl);
+      }
+
+      const horaEl = document.createElement("div");
+      horaEl.className = "hora";
+      horaEl.textContent = data.hora || "";
+      div.appendChild(horaEl);
+      mensagensEl.appendChild(div);
+      mensagensEl.scrollTop = mensagensEl.scrollHeight;
+    });
+
+    socket.on("connect", () => {
+      statusEl.textContent = "Online";
+      statusEl.classList.add("online");
+      if (meuNome) socket.emit("entrar", meuNome);
+    });
+
+    socket.on("disconnect", () => {
+      statusEl.textContent = "Off";
+      statusEl.classList.remove("online");
+    });
+
+    function escapeHtml(t) {
+      const d = document.createElement("div");
+      d.textContent = t;
+      return d.innerHTML;
+    }
+
+    btnMenuMobile.addEventListener("click", () => {
+      sidebar.classList.toggle("aberta");
+      overlay.classList.toggle("ativo");
+    });
+    overlay.addEventListener("click", () => {
+      sidebar.classList.remove("aberta");
+      overlay.classList.remove("ativo");
+    });
+
+    ajustarViewport();
   </script>
 </body>
 </html>
